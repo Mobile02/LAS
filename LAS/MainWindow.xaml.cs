@@ -7,27 +7,15 @@ using System.Windows.Input;
 
 namespace LAS
 {
-    /// <summary>
-    /// Логика взаимодействия для MainWindow.xaml
-    /// </summary>
     public partial class LASWindow : Window
     {
         private DataTable dataTable, dataTable2;
         private string path = "";
+        private bool edit = false;
 
         public LASWindow()
         {
             InitializeComponent();
-        }
-
-        private void Window_Loaded(object sender, RoutedEventArgs e)
-        {
-
-        }
-
-        private void dataGrid_MouseUp(object sender, MouseButtonEventArgs e)
-        {
-            //label.Content = dataTable.Rows[2].ItemArray.ToString();
         }
 
         private void dataGrid_KeyUp(object sender, KeyEventArgs e)
@@ -44,6 +32,7 @@ namespace LAS
 
         private void dataGrid_PreviewKeyDown(object sender, KeyEventArgs e)
         {
+            edit = true;
             if ((e.KeyboardDevice.Modifiers == ModifierKeys.Control) && (e.Key == Key.C))
             {
                 if (Clipboard.ContainsText())
@@ -66,17 +55,38 @@ namespace LAS
         private void MenuItem_Click_Paste(object sender, RoutedEventArgs e)
         {
             Paste();
+            edit = true;
         }
 
         private void MenuItem_Click_DeleteRow(object sender, RoutedEventArgs e)
         {
             if (dataTable == null)
                 return;
-            int maxRows = dataTable.Rows.Count;
-            int indexCurrentRow = dataGrid.Items.IndexOf(dataGrid.SelectedCells[0].Item);
+            try
+            {
+                string[] nameColumn = new string[dataGrid.SelectedCells.Count];
 
-            if (indexCurrentRow < maxRows)
-                dataTable.Rows[indexCurrentRow].Delete();
+                for (int i = 0; i < dataGrid.SelectedCells.Count; i++)
+                {
+                    nameColumn[i] = dataGrid.SelectedCells[i].Column.Header.ToString();
+                }
+
+                int countColumnInSelect = nameColumn.Distinct().Count();
+                int countRowInSelect = dataGrid.SelectedCells.Count / countColumnInSelect;
+                int indexFirstRowInSelect = dataGrid.Items.IndexOf(dataGrid.SelectedCells[0].Item);
+
+                for (int i = 0; i < countRowInSelect; i++)
+                {
+                    int indexCurrentRow = dataGrid.Items.IndexOf(dataGrid.SelectedCells[0].Item);
+                    dataTable.Rows[indexCurrentRow].Delete();
+                }
+                
+                edit = true;
+            }
+            catch
+            {
+                MessageBox.Show("Не выделена ни одна строка", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
         }
 
         private void MenuItem_Click_PasteRow(object sender, RoutedEventArgs e)
@@ -86,13 +96,77 @@ namespace LAS
             int indexCurrentRow = dataGrid.Items.IndexOf(dataGrid.SelectedCells[0].Item);
             var row = dataTable.NewRow();
             dataTable.Rows.InsertAt(row, indexCurrentRow + 1);
+            edit = true;
         }
 
-        public void Paste()
+        private void MenuItem_Click_DeleteColumn(object sender, RoutedEventArgs e)
         {
             if (dataTable == null)
                 return;
+            if (dataGrid.CurrentColumn == null)
+                return;
+            dataTable.Columns.RemoveAt(dataGrid.CurrentColumn.DisplayIndex);
+            dataGrid.ItemsSource = dataTable.AsDataView();
+            edit = true;
+        }
+
+        private void MenuItem_Click_ClearSelected(object sender, RoutedEventArgs e)
+        {
+            if (dataTable != null)
+                ClearSelected();
+        }
+
+        private void MenuOpen(object sender, RoutedEventArgs e)
+        {
+            OpenOrMergeFile(false);
+        }
+
+        private void MenuMerge(object sender, RoutedEventArgs e)
+        {
+            OpenOrMergeFile(true);
+        }
+
+        private void MenuSave(object sender, RoutedEventArgs e)
+        {
+            if (dataTable == null)
+                return;
+            SaveFile();
+            edit = false;
+        }
+
+        private void MenuClose(object sender, RoutedEventArgs e)
+        {
+            if (dataTable == null)
+                return;
+            if (edit)
+                if (MessageBox.Show("Вы не сохранили изменения, продолжить без сохранения?", "Сообщение", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+                    return;
+            dataTable.Clear();
+            dataTable = null;
+            edit = false;
+        }
+
+        private void MenuQuit(object sender, RoutedEventArgs e)
+        {
+            Application.Current.Shutdown();
+        }
+
+        private void WindowLAS_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            if (edit)
+            {
+                if (MessageBox.Show("Вы не сохранили изменения, продолжить без сохранения?", "Сообщение", MessageBoxButton.YesNo, MessageBoxImage.Question) == MessageBoxResult.No)
+                    e.Cancel = true;
+            }
+        }
+
+        private void Paste()
+        {
             string textFromClipboard = Clipboard.GetText();
+
+            if (dataTable == null || textFromClipboard == null || textFromClipboard == "")
+                return;
+            
             int indexCurrentRow = dataGrid.Items.IndexOf(dataGrid.SelectedCells[0].Item);
             int indexCurrentColumn = dataGrid.CurrentColumn.DisplayIndex;
             int maxColumns = dataTable.Columns.Count;
@@ -116,74 +190,10 @@ namespace LAS
                     dataTable.Rows[i][q] = columnFromCurrRow[q - indexCurrentColumn];
                 }
             }
+            edit = true;
         }
 
-        private void MenuOpen(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                path = openFileDialog.FileName;
-                if (dataTable == null)
-                {
-                    LasTools lasTools = new LasTools();
-                    dataTable = lasTools.LoadFromFile(path);
-                    dataGrid.ItemsSource = dataTable.AsDataView();
-                }
-                else
-                {
-                    dataTable.Clear();
-                    LasTools lasTools = new LasTools();
-                    dataTable = lasTools.LoadFromFile(path);
-                    dataGrid.ItemsSource = dataTable.AsDataView();
-                }
-            }
-        }
-
-        private void MenuMerge(object sender, RoutedEventArgs e)
-        {
-            OpenFileDialog openFileDialog = new OpenFileDialog();
-            if (openFileDialog.ShowDialog() == true)
-            {
-                path = openFileDialog.FileName;
-                if (dataTable == null)
-                {
-                    LasTools lasTools = new LasTools();
-                    dataTable = lasTools.LoadFromFile(path);
-                    dataGrid.ItemsSource = dataTable.AsDataView();
-                }
-                else
-                {
-                    LasTools lasTools = new LasTools();
-                    dataTable2 = lasTools.LoadFromFile(path);
-                    dataTable.Merge(dataTable2);
-                    dataGrid.ItemsSource = dataTable.AsDataView();
-                }
-            }
-        }
-
-        private void MenuSave(object sender, RoutedEventArgs e)
-        {
-            if (dataTable == null)
-                return;
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            if (saveFileDialog.ShowDialog() == true)
-            {
-                path = saveFileDialog.FileName;
-                if (dataTable != null)
-                {
-                    LasTools lasTools = new LasTools();
-                    lasTools.SaveFile(path, dataTable);
-                }
-            }
-        }
-
-        private void MenuQuit(object sender, RoutedEventArgs e)
-        {
-            Application.Current.Shutdown();
-        }
-
-        public void ClearSelected()
+        private void ClearSelected()
         {
             string[] nameColumn = new string[dataGrid.SelectedCells.Count];
 
@@ -202,6 +212,60 @@ namespace LAS
                 for (int j = 0; j < countColumnInSelect; j++)
                 {
                     dataTable.Rows[i + indexFirstRowInSelect][j + indexFirstColumnInSelect] = "-999.25";
+                }
+            }
+            edit = true;
+        }
+
+        private void OpenOrMergeFile(bool merge)
+        {
+            OpenFileDialog openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "LAS файлы (*.las)|*.las|Все файлы (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
+            {
+                path = openFileDialog.FileName;
+                LasTools lasTools = new LasTools(path);
+                lasTools.LoadFromFile();
+
+                if (!merge)
+                {
+                    if (dataTable != null)
+                        dataTable.Clear();
+
+                    dataTable = lasTools.DataTable;
+                }
+                else
+                {
+                    if (dataTable == null)
+                    {
+                        dataTable = lasTools.DataTable;
+                    }
+                    else
+                    {
+                        dataTable2 = lasTools.DataTable;
+                        dataTable.Merge(dataTable2);
+                        edit = true;
+                    }
+                }
+
+                dataGrid.ItemsSource = dataTable.AsDataView();
+                WindowLAS.Width = 70 * dataGrid.Columns.Count + 54;
+            }
+        }
+
+        private void SaveFile()
+        {
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "LAS файлы (*.las)|*.las|Все файлы (*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == true)
+            {
+                path = saveFileDialog.FileName;
+                if (dataTable != null)
+                {
+                    LasTools lasTools = new LasTools(path);
+                    lasTools.DataTable = dataTable;
+                    lasTools.SaveFile();
+                    MessageBox.Show("Сохранено!", "Сообщение", MessageBoxButton.OK, MessageBoxImage.Information);
                 }
             }
         }

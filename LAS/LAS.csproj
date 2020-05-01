@@ -81,7 +81,6 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="LasTools.cs" />
     <Compile Include="MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
@@ -128,12 +127,27 @@
   <ItemGroup>
     <Resource Include="imageres_5306.ico" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Resource Include="resources\close.ico" />
+    <Resource Include="resources\copy.ico" />
+    <Resource Include="resources\delete.ico" />
+    <Resource Include="resources\paste.ico" />
+    <Resource Include="resources\pasterow.ico" />
+  </ItemGroup>
   <ItemGroup>
     <Resource Include="resources\exit.ico" />
     <Resource Include="resources\merge.ico" />
     <Resource Include="resources\open.ico" />
     <Resource Include="resources\save.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="resources\clear.ico" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\LasTools\LasTools\LasTools.csproj">
+      <Project>{c7c80f00-7cb2-4de5-ad1f-a2ee572e5993}</Project>
+      <Name>LasTools</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

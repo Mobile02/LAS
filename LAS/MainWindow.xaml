@@ -1,38 +1,69 @@
-﻿<Window x:Class="LAS.LASWindow"
+﻿<Window x:Name="WindowLAS" x:Class="LAS.LASWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:LAS"
         mc:Ignorable="d"
-        Title="LAS редактор" Height="450" Width="800" Loaded="Window_Loaded" MinWidth="500" MinHeight="300">
+        Title="LAS редактор" Height="450" Width="800" MinWidth="500" MinHeight="300" Closing="WindowLAS_Closing">
 
     <Grid MinWidth="500" MinHeight="300">
-        <DataGrid UseLayoutRounding="False" Margin="0,25,0,0" Name="dataGrid" ColumnWidth="70" SelectionUnit="CellOrRowHeader" KeyUp="dataGrid_KeyUp" MouseUp="dataGrid_MouseUp" PreviewKeyDown="dataGrid_PreviewKeyDown" RowHeaderWidth="20" AlternatingRowBackground="#FFD7D7D7" CanUserAddRows="False">
+        <DataGrid UseLayoutRounding="False" Margin="0,25,0,0" Name="dataGrid" ColumnWidth="70" SelectionUnit="CellOrRowHeader" KeyUp="dataGrid_KeyUp" PreviewKeyDown="dataGrid_PreviewKeyDown" RowHeaderWidth="20" AlternatingRowBackground="#FFD7D7D7" CanUserAddRows="False" CanUserSortColumns="False">
             <DataGrid.ContextMenu>
                 <ContextMenu>
-                    <MenuItem Header="Копировать" Click="MenuItem_Click_Copy"/>
-                    <MenuItem Header="Вставить" Click="MenuItem_Click_Paste"/>
-                    <MenuItem Header="Удалить строку" Click="MenuItem_Click_DeleteRow" />
-                    <MenuItem Header="Вставить строку" Click="MenuItem_Click_PasteRow" />
+                    <MenuItem Header="Копировать" Click="MenuItem_Click_Copy">
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\copy.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Вставить" Click="MenuItem_Click_Paste">
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\paste.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Удалить строки" Click="MenuItem_Click_DeleteRow" >
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\delete.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Вставить строку" Click="MenuItem_Click_PasteRow" >
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\pasterow.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Удалить столбец" Click="MenuItem_Click_DeleteColumn" >
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\delete.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
+                    <MenuItem Header="Очистить выделеное" Click="MenuItem_Click_ClearSelected" >
+                        <MenuItem.Icon>
+                            <Image Source="C:\Users\Sergei\source\repos\LAS\LAS\resources\clear.ico"></Image>
+                        </MenuItem.Icon>
+                    </MenuItem>
                 </ContextMenu>
             </DataGrid.ContextMenu>
         </DataGrid>
         <Menu x:Name="Menu" HorizontalAlignment="Left" Height="20" VerticalAlignment="Top" Width="50" Margin="2,2,0,0">
             <MenuItem Header="Файл" UseLayoutRounding="False" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" MinWidth="50" MinHeight="20">
-                <MenuItem Header="Открыть" Click="MenuOpen">
+                <MenuItem Header="Открыть LAS" Click="MenuOpen">
                     <MenuItem.Icon>
                         <Image Source="/resources/open.ico"></Image>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="Добавить" Click="MenuMerge">
+                <MenuItem Header="Добавить LAS" Click="MenuMerge">
                     <MenuItem.Icon>
                         <Image Source="/resources/merge.ico"></Image>
                     </MenuItem.Icon>
                 </MenuItem>
-                <MenuItem Header="Сохранить" Click="MenuSave">
+                <MenuItem Header="Сохранить LAS" Click="MenuSave">
                     <MenuItem.Icon>
                         <Image Source="/resources/save.ico"></Image>
+                    </MenuItem.Icon>
+                </MenuItem>
+                <MenuItem Header="Закрыть LAS" Click="MenuClose">
+                    <MenuItem.Icon>
+                        <Image Source="/resources/close.ico"></Image>
                     </MenuItem.Icon>
                 </MenuItem>
                 <Separator/>
